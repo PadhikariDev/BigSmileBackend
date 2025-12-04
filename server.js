@@ -15,7 +15,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173", // replace with your frontend URL
+    credentials: true
+}));
+
 app.use(express.json()); // for parsing JSON
 
 const __filename = fileURLToPath(import.meta.url);
