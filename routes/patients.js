@@ -21,7 +21,7 @@ const medicalReportStorage = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: "medical_reports",
-        resource_type: "raw",   // very important for PDFs / docs
+        resource_type: "image",   // very important for PDFs / docs
         allowed_formats: ["pdf", "docx", "jpg", "jpeg", "png"]
     }
 });
