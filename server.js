@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 // Import routes
 import doctorRoutes from "./routes/doctors.js";
 import patientRoutes from "./routes/patients.js"; // <-- Add this
+import adminRoutes from "./routes/admin.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ mongoose
 // Routes
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/patients", patientRoutes); // <-- Add this
+app.use("/admin", adminRoutes);
 
 // Root route (optional)
 app.get("/", (req, res) => {
