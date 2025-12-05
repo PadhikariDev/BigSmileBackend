@@ -13,11 +13,21 @@ import adminRoutes from "./routes/admin.js";
 dotenv.config();
 
 const app = express();
-
+const allowedOrigins = [
+    'https://bigsmile-ten.vercel.app'
+];
 // Middleware
 app.use(cors({
-    origin: "http://localhost:5173", // replace with your frontend URL
-    credentials: true
+    origin: function (origin, callback) {
+        // allow requests with no origin (like Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
 }));
 
 app.use(express.json()); // for parsing JSON
