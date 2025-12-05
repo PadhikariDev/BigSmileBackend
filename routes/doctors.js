@@ -3,14 +3,15 @@ import express from "express";
 import Doctor from "../modules/Doctors.js";
 import multer from "multer";
 import { storage } from "../utils/cloudinary.js";  // Cloudinary storage
+import { verifyToken } from "../middleware/auth.js"; // JWT auth middleware
 
 const router = express.Router();
-
-// Use Cloudinary-based multer storage
 const upload = multer({ storage });
 
-// GET all doctors
-router.get("/", async (req, res) => {
+// =======================
+// GET all doctors (Protected)
+// =======================
+router.get("/", verifyToken, async (req, res) => {
     try {
         const doctors = await Doctor.find();
         res.json(doctors);
@@ -19,40 +20,41 @@ router.get("/", async (req, res) => {
     }
 });
 
-// POST add doctor
-router.post("/", upload.single("image"), async (req, res) => {
+// =======================
+// POST add doctor (Protected)
+// =======================
+router.post("/", verifyToken, upload.single("image"), async (req, res) => {
     try {
         const { name, speciality } = req.body;
 
-        let image = null;
-        let imagePublicId = null;
-
-        if (req.file) {
-            image = req.file.path;                     
-            imagePublicId = req.file.filename;         
+        if (!name || !speciality || !req.file) {
+            return res.status(400).json({ message: "All fields are required" });
         }
+
+        const image = req.file.path;
+        const imagePublicId = req.file.filename;
 
         const newDoctor = new Doctor({ name, speciality, image, imagePublicId });
         const savedDoctor = await newDoctor.save();
 
         res.json(savedDoctor);
     } catch (err) {
-        console.log("Doctor add error:", err);
+        console.error("Doctor add error:", err);
         res.status(400).json({ message: err.message });
     }
 });
 
-
-// DELETE doctor by name
-router.delete("/name/:name", async (req, res) => {
+// =======================
+// DELETE doctor by name (Protected)
+// =======================
+router.delete("/name/:name", verifyToken, async (req, res) => {
     try {
         const doctor = await Doctor.findOne({ name: req.params.name });
         if (!doctor) {
             return res.status(404).json({ message: "Doctor not found" });
         }
 
-
-        // Delete image from Cloudinary if it exists
+        // Delete image from Cloudinary
         if (doctor.imagePublicId) {
             const result = await cloudinary.uploader.destroy(doctor.imagePublicId);
             console.log("Cloudinary delete result:", result);
@@ -67,6 +69,5 @@ router.delete("/name/:name", async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
 
 export default router;
